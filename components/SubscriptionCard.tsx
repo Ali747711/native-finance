@@ -22,6 +22,7 @@ export default function SubscriptionCard({
   startDate,
   status,
 }: SubscriptionCardProps) {
+  const fallback = "Not available";
   return (
     <Pressable
       onPress={onPress}
@@ -49,13 +50,13 @@ export default function SubscriptionCard({
       </View>
 
       {expanded && (
-        <View className="sub-bdy">
+        <View className="sub-body">
           <View className="sub-details">
             <View className="sub-row">
               <View className="sub-row-copy">
                 <Text className="sub-label">Payment: </Text>
                 <Text className="sub-value" numberOfLines={1}>
-                  {paymentMethod?.trim()}
+                  {paymentMethod?.trim() || fallback}
                 </Text>
               </View>
             </View>
@@ -63,7 +64,7 @@ export default function SubscriptionCard({
               <View className="sub-row-copy">
                 <Text className="sub-label">Category: </Text>
                 <Text className="sub-value" numberOfLines={1}>
-                  {category?.trim()}
+                  {category?.trim() || fallback}
                 </Text>
               </View>
             </View>
@@ -71,9 +72,7 @@ export default function SubscriptionCard({
               <View className="sub-row-copy">
                 <Text className="sub-label">Started: </Text>
                 <Text className="sub-value" numberOfLines={1}>
-                  {startDate
-                    ? formatSubscriptionDateTime(startDate)
-                    : "".trim()}
+                  {startDate ? formatSubscriptionDateTime(startDate) : fallback}
                 </Text>
               </View>
             </View>
@@ -83,7 +82,7 @@ export default function SubscriptionCard({
                 <Text className="sub-value" numberOfLines={1}>
                   {renewalDate
                     ? formatSubscriptionDateTime(renewalDate)
-                    : "".trim()}
+                    : fallback}
                 </Text>
               </View>
             </View>
@@ -91,7 +90,7 @@ export default function SubscriptionCard({
               <View className="sub-row-copy">
                 <Text className="sub-label">Status: </Text>
                 <Text className="sub-value" numberOfLines={1}>
-                  {status ? formatStatusLabel(status) : "".trim()}
+                  {status ? formatStatusLabel(status) : fallback}
                 </Text>
               </View>
             </View>
