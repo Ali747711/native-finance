@@ -10,7 +10,12 @@ export interface ClerkLikeError {
   longMessage?: string;
 }
 
-export type AuthErrorTarget = "emailAddress" | "password" | "code" | "form";
+export type AuthErrorTarget =
+  | "emailAddress"
+  | "password"
+  | "code"
+  | "username"
+  | "form";
 
 export interface ResolvedAuthError {
   target: AuthErrorTarget;
@@ -63,6 +68,26 @@ const ERROR_COPY: Record<string, ResolvedAuthError> = {
     target: "code",
     message: "We couldn't verify that code. Send yourself a new one.",
   },
+  form_password_not_strong_enough: {
+    target: "password",
+    message: "That password is too easy to guess. Try a longer one.",
+  },
+  form_password_size_in_bytes_exceeded: {
+    target: "password",
+    message: "That password is too long.",
+  },
+  form_username_invalid_length: {
+    target: "username",
+    message: "That username is the wrong length.",
+  },
+  form_username_invalid_character: {
+    target: "username",
+    message: "Usernames can use letters, numbers, hyphens and underscores.",
+  },
+  form_param_format_invalid: {
+    target: "form",
+    message: "One of those values isn't in a format we accept.",
+  },
   too_many_requests: {
     target: "form",
     message: "Too many attempts. Wait a moment before trying again.",
@@ -94,4 +119,37 @@ export const resolveAuthError = (
     target: "form",
     message: error.message?.trim() || GENERIC_MESSAGE,
   };
+};
+
+/**
+ * Pulls the first usable error out of something `throw`n.
+ *
+ * The sign-in/sign-up "Future" methods hand back `{ error }`, but the signed-in
+ * user methods (`user.update`, `user.updatePassword`) reject instead — and they
+ * reject with a `ClerkAPIResponseError` carrying an `errors` array rather than
+ * the flat shape `resolveAuthError` expects. This normalises both, and degrades
+ * to `null` for non-Clerk failures such as a dropped connection.
+ */
+export const extractClerkError = (thrown: unknown): ClerkLikeError | null => {
+  if (!thrown || typeof thrown !== "object") {
+    return null;
+  }
+
+  const { errors } = thrown as { errors?: unknown };
+
+  if (Array.isArray(errors) && errors.length > 0) {
+    const [first] = errors as ClerkLikeError[];
+    return first ?? null;
+  }
+
+  const { code, message, longMessage } = thrown as ClerkLikeError;
+
+  // Requires a `code`, which every Clerk error carries. Matching on `message`
+  // alone would let a bare `TypeError: Network request failed` reach the UI as
+  // if it were copy we had written.
+  if (code) {
+    return { code, message, longMessage };
+  }
+
+  return null;
 };

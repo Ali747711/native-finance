@@ -105,6 +105,20 @@ declare global {
     value?: string;
     /** Renders the row dimmed with a "Soon" badge and no press target. */
     soon?: boolean;
+    /** Adds a chevron and makes the row tappable. Ignored when `soon`. */
+    onPress?: () => void;
+  }
+
+  interface SettingsSheetProps {
+    visible: boolean;
+    title: string;
+    onClose: () => void;
+    children: ReactNode;
+  }
+
+  interface SettingsSheetFormProps {
+    visible: boolean;
+    onClose: () => void;
   }
 }
 

@@ -1,3 +1,5 @@
+import ChangePasswordSheet from "@/components/ChangePasswordSheet";
+import EditProfileSheet from "@/components/EditProfileSheet";
 import SettingsRow from "@/components/SettingsRow";
 import SettingsSection from "@/components/SettingsSection";
 import images from "@/constants/images";
@@ -18,6 +20,9 @@ export default function Settings() {
   const { signOut } = useAuth();
   const { user } = useUser();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [openSheet, setOpenSheet] = useState<"profile" | "password" | null>(
+    null
+  );
 
   const displayName = resolveUserDisplayName(user);
   const email = user?.primaryEmailAddress?.emailAddress;
@@ -98,6 +103,21 @@ export default function Settings() {
           </View>
         </View>
 
+        <SettingsSection title="Profile">
+          <SettingsRow
+            icon="person-outline"
+            label="Name"
+            value={user?.fullName ?? "Add your name"}
+            onPress={() => setOpenSheet("profile")}
+          />
+          <SettingsRow
+            icon="lock-closed-outline"
+            label="Password"
+            value="Change your password"
+            onPress={() => setOpenSheet("password")}
+          />
+        </SettingsSection>
+
         <SettingsSection title="Account">
           <SettingsRow
             icon="mail-outline"
@@ -162,6 +182,15 @@ export default function Settings() {
 
         <Text className="settings-footnote">Recurly v1.0.0</Text>
       </ScrollView>
+
+      <EditProfileSheet
+        visible={openSheet === "profile"}
+        onClose={() => setOpenSheet(null)}
+      />
+      <ChangePasswordSheet
+        visible={openSheet === "password"}
+        onClose={() => setOpenSheet(null)}
+      />
     </SafeAreaView>
   );
 }

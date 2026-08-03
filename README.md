@@ -10,6 +10,7 @@ Built with Expo Router and NativeWind. Repo: [`Ali747711/native-finance`](https:
 | --- | --- |
 | Runtime | Expo SDK 54, React Native 0.81, React 19 |
 | Navigation | Expo Router 6 (file-based) |
+| Auth | Clerk (`@clerk/expo`) — custom email/password flows |
 | Styling | NativeWind 5 (preview) + Tailwind 4 |
 | Fonts | Plus Jakarta Sans (6 weights, bundled) |
 | Dates | Day.js |
@@ -80,9 +81,11 @@ Fonts are loaded in the root layout and exposed as `font-sans`, `font-sans-light
 | --- | --- |
 | Home — balance, upcoming carousel, expandable subscription list | Built |
 | Tab bar, fonts, theme tokens, routing shell | Built |
-| Subscriptions, Insights, Settings | Placeholder screens |
-| Onboarding, Sign in, Sign up | Placeholder screens |
-| Data | Static fixtures in `constants/data.ts` — no backend yet |
+| Sign in, Sign up — Clerk-backed custom flows with email verification | Built |
+| Settings — Clerk profile, name and password editing, sign out | Built |
+| Subscriptions, Insights | Placeholder screens |
+| Onboarding | Placeholder screen |
+| Subscription data | Static fixtures in `constants/data.ts` — no backend yet |
 | Tests | None configured |
 
 ## Scripts

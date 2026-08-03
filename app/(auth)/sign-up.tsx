@@ -39,6 +39,12 @@ export default function SignUp() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
+  // Verifying and resending both mutate the same server-side sign-up attempt, so
+  // either one in flight blocks the others. Letting a resend land mid-verify
+  // issues a fresh code that invalidates the one being checked, which surfaces to
+  // the user as "that code isn't right" for a code they read correctly.
+  const isBusy = isSubmitting || isResending;
+
   const clearFeedback = () => {
     setFormError(null);
     setNotice(null);
@@ -104,7 +110,7 @@ export default function SignUp() {
   };
 
   const handleVerify = async () => {
-    if (!signUp || isSubmitting) {
+    if (!signUp || isBusy) {
       return;
     }
 
@@ -142,7 +148,7 @@ export default function SignUp() {
   };
 
   const handleResend = async () => {
-    if (!signUp || isResending) {
+    if (!signUp || isBusy) {
       return;
     }
 
@@ -165,6 +171,12 @@ export default function SignUp() {
   };
 
   const handleUseDifferentEmail = async () => {
+    // Same contention as above: reset() discards the server-side attempt, so
+    // running it mid-verify pulls the record out from under an in-flight request.
+    if (isBusy) {
+      return;
+    }
+
     clearFeedback();
     setCodeErrors({});
     setCode("");
@@ -211,7 +223,7 @@ export default function SignUp() {
               label="Verify and continue"
               onPress={handleVerify}
               loading={isSubmitting}
-              disabled={!signUp}
+              disabled={!signUp || isResending}
             />
 
             <View className="auth-divider-row">
@@ -223,9 +235,9 @@ export default function SignUp() {
             <Pressable
               className="auth-secondary-button"
               onPress={handleResend}
-              disabled={isResending}
+              disabled={isBusy}
               accessibilityRole="button"
-              accessibilityState={{ disabled: isResending, busy: isResending }}
+              accessibilityState={{ disabled: isBusy, busy: isResending }}
             >
               <Text className="auth-secondary-button-text">
                 {isResending ? "Sending…" : "Send a new code"}

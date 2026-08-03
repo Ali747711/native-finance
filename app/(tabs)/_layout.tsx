@@ -3,11 +3,9 @@ import { colors, components } from "@/constants/theme";
 import { useAuth } from "@clerk/expo";
 import clsx from "clsx";
 import { Redirect, Tabs } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
 import { Image, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-SplashScreen.preventAutoHideAsync();
 const tabBar = components.tabBar;
 const TabsLayout = () => {
   const insets = useSafeAreaInsets();
