@@ -2,6 +2,7 @@ import AuthField from "@/components/AuthField";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import SettingsSheet from "@/components/SettingsSheet";
 import { extractClerkError, resolveAuthError } from "@/lib/auth-errors";
+import { posthog } from "@/lib/posthog";
 import {
   NAME_MAX_LENGTH,
   profileSchema,
@@ -54,6 +55,7 @@ export default function EditProfileSheet({
 
     try {
       await user.update(parsed.data);
+      posthog?.capture("profile_updated");
       onClose();
     } catch (thrown) {
       // These resource methods reject rather than returning `{ error }`.

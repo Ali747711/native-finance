@@ -529,4 +529,102 @@
   .settings-footnote {
     @apply mt-4 text-center text-xs font-sans-medium text-muted-foreground;
   }
+
+  .subs-screen {
+    @apply flex-1 bg-background;
+  }
+
+  .subs-header {
+    @apply gap-4 px-5 pt-2;
+  }
+
+  .subs-heading {
+    @apply text-2xl font-sans-bold text-primary;
+  }
+
+  .subs-count {
+    @apply px-5 pb-3 pt-4 text-[11px] font-sans-semibold uppercase tracking-[1px] text-muted-foreground;
+  }
+
+  .subs-list {
+    @apply flex-1;
+  }
+
+  .subs-list-content {
+    @apply px-5 pb-24;
+  }
+
+  .subs-empty {
+    @apply items-center gap-2 px-5 py-14;
+  }
+
+  .subs-empty-title {
+    @apply text-lg font-sans-bold text-primary;
+  }
+
+  .subs-empty-copy {
+    @apply text-center text-sm font-sans-medium text-muted-foreground;
+  }
+
+  .search-field {
+    @apply flex-row items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3;
+  }
+
+  .search-input {
+    @apply flex-1 text-base font-sans-medium text-primary;
+  }
+
+  .search-clear {
+    @apply size-6 items-center justify-center rounded-full bg-muted;
+  }
+
+  .sheet-grabber-wrap {
+    @apply items-center pb-1 pt-3;
+  }
+
+  .sheet-grabber {
+    @apply h-1 w-10 rounded-full bg-black/20;
+  }
+
+  .modal-heading-copy {
+    @apply min-w-0 flex-1 pr-3;
+  }
+
+  .modal-subtitle {
+    @apply mt-1 text-sm font-sans-medium text-muted-foreground;
+  }
+
+  .create-section {
+    @apply gap-2;
+  }
+
+  .create-section-label {
+    @apply text-[11px] font-sans-semibold uppercase tracking-[1px] text-muted-foreground;
+  }
+
+  /* Solid tint rather than a dashed outline — Android renders dashed borders
+     unreliably once border-radius is involved. */
+  .create-preview {
+    @apply rounded-3xl bg-muted/60 p-3;
+  }
+
+  .price-input-row {
+    @apply flex-row items-center gap-2 rounded-2xl border border-border bg-background px-4 py-4;
+  }
+
+  .price-prefix {
+    @apply text-base font-sans-bold text-muted-foreground;
+  }
+
+  .price-input {
+    @apply flex-1 text-base font-sans-medium text-primary;
+  }
+
+  .chip-inner {
+    @apply flex-row items-center gap-2;
+  }
+
+  .chip-dot {
+    @apply size-2.5 rounded-full;
+  }
 }

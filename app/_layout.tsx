@@ -1,9 +1,11 @@
 import "@/global.css";
-import { ClerkProvider, useAuth } from "@clerk/expo";
+import { ClerkProvider, useAuth, useUser } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { PostHogProvider } from "posthog-react-native";
+import { useEffect, useRef } from "react";
+import { posthog } from "../lib/posthog";
 
 /**
  * Claims control of the native splash screen.
@@ -58,6 +60,15 @@ function AppShell() {
     "sans-light": require("../assets/fonts/PlusJakartaSans-Light.ttf"),
   });
   const { isLoaded: isAuthLoaded } = useAuth();
+  const { user } = useUser();
+  const identifiedSignature = useRef<string | null>(null);
+
+  // Read as primitives so the effect below depends on the identity *values*
+  // rather than on the Clerk resource's object identity. `user.update()` mutates
+  // that resource in place, so a reference-keyed effect can miss a profile edit.
+  const userId = user?.id;
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const userName = user?.fullName;
 
   // A font failure resolves as ready on purpose. `fontsLoaded` never flips true
   // in that case, and holding the splash forever is a worse outcome than
@@ -78,6 +89,40 @@ function AppShell() {
     }
   }, [fontError]);
 
+  useEffect(() => {
+    if (!isAuthLoaded || !posthog) {
+      return;
+    }
+
+    if (!userId) {
+      // Reset unconditionally, not only when this run identified someone.
+      // PostHog persists its distinct ID across launches, so a signed-out cold
+      // start would otherwise let lifecycle events land on the previous account.
+      posthog.reset();
+      identifiedSignature.current = null;
+      return;
+    }
+
+    // Keyed on the values actually sent, not the ID alone. A profile edit keeps
+    // the same Clerk ID, so an ID-only guard would pin the person properties to
+    // whatever the name was at first sign-in.
+    const signature = `${userId}|${userEmail ?? ""}|${userName ?? ""}`;
+
+    if (identifiedSignature.current === signature) {
+      return;
+    }
+
+    // Clerk's immutable resource ID is the stable distinct ID. Human-readable
+    // fields remain person properties, never event properties.
+    posthog.identify(userId, {
+      $set: {
+        ...(userEmail ? { email: userEmail } : {}),
+        ...(userName ? { name: userName } : {}),
+      },
+    });
+    identifiedSignature.current = signature;
+  }, [isAuthLoaded, userId, userEmail, userName]);
+
   // Stays behind the splash rather than dismissing early. The (tabs) and (auth)
   // layouts both render null until auth resolves, so hiding on fonts alone would
   // expose a blank frame between splash teardown and first meaningful paint.
@@ -85,5 +130,11 @@ function AppShell() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  const navigation = <Stack screenOptions={{ headerShown: false }} />;
+
+  return posthog ? (
+    <PostHogProvider client={posthog}>{navigation}</PostHogProvider>
+  ) : (
+    navigation
+  );
 }

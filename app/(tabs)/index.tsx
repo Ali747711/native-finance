@@ -1,20 +1,18 @@
+import CreateSubscriptionModal from "@/components/CreateSubscriptionModal";
 import ListHeading from "@/components/ListHeading";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
-import {
-  HOME_BALANCE,
-  HOME_SUBSCRIPTIONS,
-  UPCOMING_SUBSCRIPTIONS,
-} from "@/constants/data";
+import { HOME_BALANCE, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import images from "@/constants/images";
+import { useSubscriptions } from "@/lib/subscription-store";
 import { resolveUserDisplayName } from "@/lib/user";
 import { formatCurrency } from "@/lib/utils";
 import { useUser } from "@clerk/expo";
 import dayjs from "dayjs";
 import { styled } from "nativewind";
 import { useState } from "react";
-import { FlatList, Image, Text, View } from "react-native";
+import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView as RNNSafeAreaView } from "react-native-safe-area-context";
 
 const SafeAreaView = styled(RNNSafeAreaView);
@@ -23,6 +21,8 @@ export default function Home() {
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<
     string | null
   >(null);
+  const { subscriptions, addSubscription } = useSubscriptions();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const displayName = resolveUserDisplayName(user);
   // Clerk always returns an `imageUrl` — a generated initials avatar when the
@@ -49,7 +49,14 @@ export default function Home() {
                   {displayName}
                 </Text>
               </View>
-              <Image source={icons.add} className="home-add-icon" />
+              <Pressable
+                onPress={() => setIsCreateOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Add a subscription"
+                hitSlop={8}
+              >
+                <Image source={icons.add} className="home-add-icon" />
+              </Pressable>
             </View>
 
             <View className="home-balance-card">
@@ -86,7 +93,7 @@ export default function Home() {
             <ListHeading title="Subscriptions" />
           </>
         )}
-        data={HOME_SUBSCRIPTIONS}
+        data={subscriptions}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <SubscriptionCard
@@ -106,6 +113,12 @@ export default function Home() {
         extraData={expandedSubscriptionId}
         showsVerticalScrollIndicator={false}
         contentContainerClassName="pb-20"
+      />
+
+      <CreateSubscriptionModal
+        visible={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreate={addSubscription}
       />
     </SafeAreaView>
   );

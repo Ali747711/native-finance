@@ -4,6 +4,7 @@ import SettingsRow from "@/components/SettingsRow";
 import SettingsSection from "@/components/SettingsSection";
 import images from "@/constants/images";
 import { colors } from "@/constants/theme";
+import { posthog } from "@/lib/posthog";
 import { resolveUserDisplayName } from "@/lib/user";
 import { useAuth, useUser } from "@clerk/expo";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -43,6 +44,9 @@ export default function Settings() {
     setIsSigningOut(true);
 
     try {
+      // Capture while the Clerk identity remains active. The root auth boundary
+      // resets analytics when Clerk clears this session.
+      posthog?.capture("user_logged_out");
       await signOut();
       // Clearing the session flips `isSignedIn`, and the (tabs) guard redirects
       // to /sign-in on the next render — no manual navigation needed.
