@@ -577,4 +577,54 @@
   .search-clear {
     @apply size-6 items-center justify-center rounded-full bg-muted;
   }
+
+  .sheet-grabber-wrap {
+    @apply items-center pb-1 pt-3;
+  }
+
+  .sheet-grabber {
+    @apply h-1 w-10 rounded-full bg-black/20;
+  }
+
+  .modal-heading-copy {
+    @apply min-w-0 flex-1 pr-3;
+  }
+
+  .modal-subtitle {
+    @apply mt-1 text-sm font-sans-medium text-muted-foreground;
+  }
+
+  .create-section {
+    @apply gap-2;
+  }
+
+  .create-section-label {
+    @apply text-[11px] font-sans-semibold uppercase tracking-[1px] text-muted-foreground;
+  }
+
+  /* Solid tint rather than a dashed outline — Android renders dashed borders
+     unreliably once border-radius is involved. */
+  .create-preview {
+    @apply rounded-3xl bg-muted/60 p-3;
+  }
+
+  .price-input-row {
+    @apply flex-row items-center gap-2 rounded-2xl border border-border bg-background px-4 py-4;
+  }
+
+  .price-prefix {
+    @apply text-base font-sans-bold text-muted-foreground;
+  }
+
+  .price-input {
+    @apply flex-1 text-base font-sans-medium text-primary;
+  }
+
+  .chip-inner {
+    @apply flex-row items-center gap-2;
+  }
+
+  .chip-dot {
+    @apply size-2.5 rounded-full;
+  }
 }

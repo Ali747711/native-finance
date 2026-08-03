@@ -1,5 +1,4 @@
 import { HOME_SUBSCRIPTIONS } from "@/constants/data";
-import { posthog } from "@/lib/posthog";
 import {
   createContext,
   useCallback,
@@ -32,17 +31,8 @@ export function SubscriptionsProvider({ children }: { children: ReactNode }) {
     useState<Subscription[]>(HOME_SUBSCRIPTIONS);
 
   const addSubscription = useCallback((subscription: Subscription) => {
-    // Captured here rather than in the modal so every creation path is counted,
-    // including any future one. Category and cadence only — the name and price
-    // are the user's own financial detail and don't belong in analytics.
-    // Both fields are optional on `Subscription` (the fixtures predate them) and
-    // PostHog's property type rejects `undefined`, so fall back rather than drop
-    // the event.
-    posthog?.capture("subscription_created", {
-      category: subscription.category ?? "Unknown",
-      frequency: subscription.frequency ?? "Unknown",
-    });
-
+    // No analytics here: CreateSubscriptionModal already captures the creation
+    // event. Firing from both places double-counted every subscription.
     // Prepend so a new subscription is visible without scrolling.
     setSubscriptions((current) => [subscription, ...current]);
   }, []);

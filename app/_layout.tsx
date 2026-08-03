@@ -61,7 +61,14 @@ function AppShell() {
   });
   const { isLoaded: isAuthLoaded } = useAuth();
   const { user } = useUser();
-  const identifiedUserId = useRef<string | null>(null);
+  const identifiedSignature = useRef<string | null>(null);
+
+  // Read as primitives so the effect below depends on the identity *values*
+  // rather than on the Clerk resource's object identity. `user.update()` mutates
+  // that resource in place, so a reference-keyed effect can miss a profile edit.
+  const userId = user?.id;
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+  const userName = user?.fullName;
 
   // A font failure resolves as ready on purpose. `fontsLoaded` never flips true
   // in that case, and holding the splash forever is a worse outcome than
@@ -87,32 +94,34 @@ function AppShell() {
       return;
     }
 
-    if (!user) {
-      if (identifiedUserId.current) {
-        // Clerk has ended the active session. Clear the persisted identity so a
-        // later account cannot inherit this user's analytics state.
-        posthog.reset();
-        identifiedUserId.current = null;
-      }
+    if (!userId) {
+      // Reset unconditionally, not only when this run identified someone.
+      // PostHog persists its distinct ID across launches, so a signed-out cold
+      // start would otherwise let lifecycle events land on the previous account.
+      posthog.reset();
+      identifiedSignature.current = null;
       return;
     }
 
-    if (identifiedUserId.current === user.id) {
+    // Keyed on the values actually sent, not the ID alone. A profile edit keeps
+    // the same Clerk ID, so an ID-only guard would pin the person properties to
+    // whatever the name was at first sign-in.
+    const signature = `${userId}|${userEmail ?? ""}|${userName ?? ""}`;
+
+    if (identifiedSignature.current === signature) {
       return;
     }
 
     // Clerk's immutable resource ID is the stable distinct ID. Human-readable
     // fields remain person properties, never event properties.
-    posthog.identify(user.id, {
+    posthog.identify(userId, {
       $set: {
-        ...(user.primaryEmailAddress?.emailAddress
-          ? { email: user.primaryEmailAddress.emailAddress }
-          : {}),
-        ...(user.fullName ? { name: user.fullName } : {}),
+        ...(userEmail ? { email: userEmail } : {}),
+        ...(userName ? { name: userName } : {}),
       },
     });
-    identifiedUserId.current = user.id;
-  }, [isAuthLoaded, user]);
+    identifiedSignature.current = signature;
+  }, [isAuthLoaded, userId, userEmail, userName]);
 
   // Stays behind the splash rather than dismissing early. The (tabs) and (auth)
   // layouts both render null until auth resolves, so hiding on fonts alone would

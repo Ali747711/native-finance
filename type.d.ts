@@ -151,6 +151,14 @@ declare global {
     onSelect: (category: string) => void;
   }
 
+  interface PriceFieldProps {
+    label: string;
+    value: string;
+    onChangeText: (value: string) => void;
+    error?: string;
+    onSubmitEditing?: () => void;
+  }
+
   interface CreateSubscriptionModalProps {
     visible: boolean;
     onClose: () => void;
