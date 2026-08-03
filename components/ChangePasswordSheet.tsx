@@ -2,6 +2,7 @@ import AuthField from "@/components/AuthField";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import SettingsSheet from "@/components/SettingsSheet";
 import { extractClerkError, resolveAuthError } from "@/lib/auth-errors";
+import { posthog } from "@/lib/posthog";
 import {
   PASSWORD_MIN_LENGTH,
   changePasswordSchema,
@@ -67,6 +68,7 @@ export default function ChangePasswordSheet({
         // Clerk keeps the current session alive, so this device stays signed in.
         signOutOfOtherSessions: true,
       });
+      posthog?.capture("password_changed");
       onClose();
     } catch (thrown) {
       const { target, message } = resolveAuthError(extractClerkError(thrown));

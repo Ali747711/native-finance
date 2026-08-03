@@ -4,6 +4,7 @@ import AuthHeader from "@/components/AuthHeader";
 import AuthShell from "@/components/AuthShell";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import { resolveAuthError } from "@/lib/auth-errors";
+import { posthog } from "@/lib/posthog";
 import {
   signInSchema,
   toFieldErrors,
@@ -59,7 +60,10 @@ export default function SignIn() {
 
         if (finalizeError) {
           setFormError(resolveAuthError(finalizeError).message);
+          return;
         }
+
+        posthog?.capture("user_signed_in");
         // On success the session goes active and the (auth) layout redirects.
         return;
       }

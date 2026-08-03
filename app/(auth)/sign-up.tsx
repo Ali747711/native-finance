@@ -4,6 +4,7 @@ import AuthHeader from "@/components/AuthHeader";
 import AuthShell from "@/components/AuthShell";
 import AuthSubmitButton from "@/components/AuthSubmitButton";
 import { resolveAuthError, type ClerkLikeError } from "@/lib/auth-errors";
+import { posthog } from "@/lib/posthog";
 import {
   PASSWORD_MIN_LENGTH,
   VERIFICATION_CODE_LENGTH,
@@ -102,6 +103,7 @@ export default function SignUp() {
         return;
       }
 
+      posthog?.capture("sign_up_verification_started");
       setStep("verify");
       setNotice(`We sent a code to ${parsed.data.emailAddress}.`);
     } finally {
@@ -139,7 +141,10 @@ export default function SignUp() {
 
       if (finalizeError) {
         applyClerkError(finalizeError, "verify");
+        return;
       }
+
+      posthog?.capture("user_signed_up");
       // On success the session goes active, `isSignedIn` flips, and the
       // (auth) layout redirects away. No manual navigation needed here.
     } finally {
@@ -164,6 +169,7 @@ export default function SignUp() {
         return;
       }
 
+      posthog?.capture("sign_up_verification_resent");
       setNotice("We sent you a new code.");
     } finally {
       setIsResending(false);

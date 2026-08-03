@@ -1,9 +1,11 @@
 import "@/global.css";
-import { ClerkProvider, useAuth } from "@clerk/expo";
+import { ClerkProvider, useAuth, useUser } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { PostHogProvider } from "posthog-react-native";
+import { useEffect, useRef } from "react";
+import { posthog } from "../lib/posthog";
 
 /**
  * Claims control of the native splash screen.
@@ -58,6 +60,8 @@ function AppShell() {
     "sans-light": require("../assets/fonts/PlusJakartaSans-Light.ttf"),
   });
   const { isLoaded: isAuthLoaded } = useAuth();
+  const { user } = useUser();
+  const identifiedUserId = useRef<string | null>(null);
 
   // A font failure resolves as ready on purpose. `fontsLoaded` never flips true
   // in that case, and holding the splash forever is a worse outcome than
@@ -78,6 +82,38 @@ function AppShell() {
     }
   }, [fontError]);
 
+  useEffect(() => {
+    if (!isAuthLoaded || !posthog) {
+      return;
+    }
+
+    if (!user) {
+      if (identifiedUserId.current) {
+        // Clerk has ended the active session. Clear the persisted identity so a
+        // later account cannot inherit this user's analytics state.
+        posthog.reset();
+        identifiedUserId.current = null;
+      }
+      return;
+    }
+
+    if (identifiedUserId.current === user.id) {
+      return;
+    }
+
+    // Clerk's immutable resource ID is the stable distinct ID. Human-readable
+    // fields remain person properties, never event properties.
+    posthog.identify(user.id, {
+      $set: {
+        ...(user.primaryEmailAddress?.emailAddress
+          ? { email: user.primaryEmailAddress.emailAddress }
+          : {}),
+        ...(user.fullName ? { name: user.fullName } : {}),
+      },
+    });
+    identifiedUserId.current = user.id;
+  }, [isAuthLoaded, user]);
+
   // Stays behind the splash rather than dismissing early. The (tabs) and (auth)
   // layouts both render null until auth resolves, so hiding on fonts alone would
   // expose a blank frame between splash teardown and first meaningful paint.
@@ -85,5 +121,11 @@ function AppShell() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  const navigation = <Stack screenOptions={{ headerShown: false }} />;
+
+  return posthog ? (
+    <PostHogProvider client={posthog}>{navigation}</PostHogProvider>
+  ) : (
+    navigation
+  );
 }
