@@ -1,51 +1,95 @@
-# Welcome to your Expo app 👋
+# Recurly
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A subscription tracker for iOS and Android — see what you're paying for, what renews next, and what it costs you each month.
 
-## Get started
+Built with Expo Router and NativeWind. Repo: [`Ali747711/native-finance`](https://github.com/Ali747711/native-finance).
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+| Layer | Choice |
+| --- | --- |
+| Runtime | Expo SDK 54, React Native 0.81, React 19 |
+| Navigation | Expo Router 6 (file-based) |
+| Styling | NativeWind 5 (preview) + Tailwind 4 |
+| Fonts | Plus Jakarta Sans (6 weights, bundled) |
+| Dates | Day.js |
+| Language | TypeScript (strict) |
 
-2. Start the app
+New Architecture, the React Compiler, and typed routes are all enabled in `app.json` — so `href` values are typechecked against the real route tree, and a typo in a link is a build error rather than an unmatched-route screen.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Then open in Expo Go, an iOS simulator, or an Android emulator. `npm run ios` / `npm run android` / `npm run web` jump straight to a target.
 
-## Learn more
+## Project structure
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+app/                    routes (file-based)
+components/             shared UI
+constants/              data, theme tokens, icon + image maps
+lib/utils.ts            formatting helpers
+assets/fonts/           Plus Jakarta Sans
+global.css              Tailwind theme + semantic component classes
+type.d.ts               ambient app types (global, no imports needed)
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Routes
 
-## Join the community
+Parenthesised folders are Expo Router [route groups](https://docs.expo.dev/router/basics/notation/) — they organise files without adding a URL segment, which is why `(tabs)/index.tsx` serves `/`.
 
-Join our community of developers creating universal apps.
+| URL | File |
+| --- | --- |
+| `/` | `app/(tabs)/index.tsx` |
+| `/subscription` | `app/(tabs)/subscription/index.tsx` |
+| `/subscription/[id]` | `app/(tabs)/subscription/[id].tsx` |
+| `/insights` | `app/(tabs)/insights.tsx` |
+| `/settings` | `app/(tabs)/settings.tsx` |
+| `/sign-in` | `app/(auth)/sign-in.tsx` |
+| `/sign-up` | `app/(auth)/sign-up.tsx` |
+| `/onboarding` | `app/onboarding.tsx` |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# native-finance
+Three layouts drive the shell: the root `Stack` loads fonts and holds the splash screen until they resolve; `(tabs)/_layout.tsx` renders a floating pill tab bar built from the `tabs` array in `constants/data.ts`; `(tabs)/subscription/_layout.tsx` is a nested `Stack` so detail pages push *inside* the tab instead of registering as tabs of their own.
+
+## Design system
+
+Tokens live in **two places on purpose**, and they must be kept in sync:
+
+- `global.css` `@theme` — drives NativeWind utility classes (`bg-background`, `text-accent`, `p-5`)
+- `constants/theme.ts` — the same values as JS, for props that can't take a className (`tabBarStyle`, `Math.max` insets)
+
+`global.css` also defines semantic component classes under `@layer components` — `home-*`, `sub-*`, `upcoming-*`, `auth-*`, `tabs-*`, `modal-*`, `category-chip-*`. Screens compose these rather than repeating long utility strings.
+
+Fonts are loaded in the root layout and exposed as `font-sans`, `font-sans-light`, `font-sans-medium`, `font-sans-semibold`, `font-sans-bold`, `font-sans-extrabold`.
+
+## Utilities
+
+`lib/utils.ts`:
+
+- `formatCurrency(value, currency = "USD")` — U.S.-style money, always two decimals. Wrapped in try-catch because Hermes ships a partial `Intl`; falls back to hand-rolled grouping so a price label can never crash a screen.
+- `formatSubscriptionDateTime(value?)` — `MM/DD/YYYY`, or `"Not provided"` for missing/invalid input.
+- `formatStatusLabel(value?)` — capitalises a status, or `"Unknown"`.
+
+## Status
+
+| Area | State |
+| --- | --- |
+| Home — balance, upcoming carousel, expandable subscription list | Built |
+| Tab bar, fonts, theme tokens, routing shell | Built |
+| Subscriptions, Insights, Settings | Placeholder screens |
+| Onboarding, Sign in, Sign up | Placeholder screens |
+| Data | Static fixtures in `constants/data.ts` — no backend yet |
+| Tests | None configured |
+
+## Scripts
+
+| Command | Does |
+| --- | --- |
+| `npm start` | Start the dev server |
+| `npm run ios` / `android` / `web` | Start on a specific target |
+| `npm run lint` | ESLint via `expo lint` |
+| `npx tsc --noEmit` | Typecheck |
