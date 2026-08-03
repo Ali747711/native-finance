@@ -17,12 +17,29 @@ declare global {
     icon: ImageSourcePropType;
   }
 
+  type SubscriptionCategory =
+    | "Entertainment"
+    | "AI Tools"
+    | "Developer Tools"
+    | "Design"
+    | "Productivity"
+    | "Cloud"
+    | "Music"
+    | "Other";
+
+  type SubscriptionFrequency = "Monthly" | "Yearly";
+
   interface Subscription {
     id: string;
     icon: ImageSourcePropType;
     name: string;
     plan?: string;
     category?: string;
+    /**
+     * Billing cadence as a closed set. Duplicates `billing`, which stays a free
+     * string for the existing fixtures — see the note in CreateSubscriptionModal.
+     */
+    frequency?: SubscriptionFrequency;
     paymentMethod?: string;
     status?: string;
     startDate?: string;
@@ -119,6 +136,25 @@ declare global {
   interface SettingsSheetFormProps {
     visible: boolean;
     onClose: () => void;
+  }
+
+  interface SearchFieldProps {
+    value: string;
+    onChangeText: (value: string) => void;
+    placeholder?: string;
+    accessibilityLabel: string;
+  }
+
+  interface CategoryChipsProps {
+    categories: string[];
+    activeCategory: string;
+    onSelect: (category: string) => void;
+  }
+
+  interface CreateSubscriptionModalProps {
+    visible: boolean;
+    onClose: () => void;
+    onCreate: (subscription: Subscription) => void;
   }
 }
 

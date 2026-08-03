@@ -105,3 +105,34 @@ export const HOME_SUBSCRIPTIONS: Subscription[] = [
     color: "#b8e8d0",
   },
 ];
+
+export const SUBSCRIPTION_CATEGORIES = [
+  "Entertainment",
+  "AI Tools",
+  "Developer Tools",
+  "Design",
+  "Productivity",
+  "Cloud",
+  "Music",
+  "Other",
+] as const;
+
+export const SUBSCRIPTION_FREQUENCIES = ["Monthly", "Yearly"] as const;
+
+/**
+ * Card tint per category.
+ *
+ * All pastels on purpose — `SubscriptionCard` paints this as the collapsed
+ * background while the text stays `text-primary` (dark navy), so a saturated
+ * colour here would leave the name unreadable.
+ */
+export const CATEGORY_COLORS: Record<SubscriptionCategory, string> = {
+  Entertainment: "#f5c542",
+  "AI Tools": "#b8e8d0",
+  "Developer Tools": "#b8d4e3",
+  Design: "#e8def8",
+  Productivity: "#ffd9c0",
+  Cloud: "#cfe3f7",
+  Music: "#8fd1bd",
+  Other: "#f6eecf",
+};

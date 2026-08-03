@@ -75,6 +75,35 @@ export const changePasswordSchema = z
     error: "Pick something different from your current password",
   });
 
+export const SUBSCRIPTION_NAME_MAX_LENGTH = 60;
+
+export const createSubscriptionSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: "Enter a name" })
+    .max(SUBSCRIPTION_NAME_MAX_LENGTH, {
+      error: `Keep this under ${SUBSCRIPTION_NAME_MAX_LENGTH} characters`,
+    }),
+  // Arrives as text from a decimal-pad input, so parse rather than trust. The
+  // `Number.isFinite` guard rejects "", "abc" and "1,5" — all of which coerce to
+  // NaN — while the `> 0` check rejects "0" and "-5".
+  price: z
+    .string()
+    .trim()
+    .min(1, { error: "Enter a price" })
+    .refine(
+      (raw) => {
+        const parsed = Number(raw);
+        return Number.isFinite(parsed) && parsed > 0;
+      },
+      { error: "Enter a price greater than zero" }
+    )
+    .transform(Number),
+});
+
+export type CreateSubscriptionValues = z.infer<typeof createSubscriptionSchema>;
+
 export type SignInValues = z.infer<typeof signInSchema>;
 export type ProfileValues = z.infer<typeof profileSchema>;
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
